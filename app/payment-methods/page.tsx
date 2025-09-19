@@ -1,6 +1,6 @@
-"use client"
 
-import type React from "react"
+"use client"
+import React from "react"
 
 import { useState } from "react"
 import { SiteHeader } from "@/components/site-header"
@@ -38,8 +38,13 @@ export default function PaymentMethodsPage() {
   const [newPhoneNumber, setNewPhoneNumber] = useState("")
   const [newEmail, setNewEmail] = useState("")
 
+  // Only redirect on client
+  React.useEffect(() => {
+    if (!user) {
+      router.push("/login")
+    }
+  }, [user, router])
   if (!user) {
-    router.push("/login")
     return null
   }
 

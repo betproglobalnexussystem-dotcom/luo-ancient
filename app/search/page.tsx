@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, Suspense } from "react"
 import { useSearchParams } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
@@ -103,7 +103,7 @@ const searchData = {
   ]
 }
 
-export default function SearchPage() {
+function SearchContent() {
   const searchParams = useSearchParams()
   const [query, setQuery] = useState(searchParams.get("q") || "")
   const [activeTab, setActiveTab] = useState("all")
@@ -162,13 +162,15 @@ export default function SearchPage() {
 
   // Update URL when search changes
   useEffect(() => {
-    const url = new URL(window.location.href)
-    if (query) {
-      url.searchParams.set("q", query)
-    } else {
-      url.searchParams.delete("q")
+    if (typeof window !== 'undefined') {
+      const url = new URL(window.location.href)
+      if (query) {
+        url.searchParams.set("q", query)
+      } else {
+        url.searchParams.delete("q")
+      }
+      window.history.replaceState({}, "", url.toString())
     }
-    window.history.replaceState({}, "", url.toString())
   }, [query])
 
   return (
@@ -362,5 +364,25 @@ export default function SearchPage() {
       </main>
       <Footer />
     </div>
+  )
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col min-h-screen">
+        <SiteHeader />
+        <main className="flex-grow pt-12 md:pt-16">
+          <div className="container mx-auto px-4 py-8">
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary"></div>
+            </div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    }>
+      <SearchContent />
+    </Suspense>
   )
 }

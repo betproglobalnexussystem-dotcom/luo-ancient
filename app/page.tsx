@@ -5,8 +5,8 @@ import { SiteHeader } from "@/components/site-header"
 import { MovieCard } from "@/components/movie-card"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
+import { ImageSlider } from "@/components/image-slider"
 import Link from "next/link"
-import Image from "next/image"
 import { movieService, slideService, type Movie, type Slide } from "@/lib/firebase-services"
 
 export default function Home() {
@@ -26,32 +26,19 @@ export default function Home() {
       .finally(() => { if (mounted) setIsLoadingSlides(false) })
     return () => { mounted = false }
   }, [])
-  const heroSlide = slides[0]
 
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
       <main className="flex-grow pt-12 md:pt-16">
         <div className="container mx-auto px-4 py-8">
-          {/* Hero Section (Slides) */}
-          <div className="mb-12 relative h-96 rounded-2xl overflow-hidden">
-            {heroSlide ? (
-              <>
-                <Image src={heroSlide.imageUrl || "/placeholder.svg"} alt={heroSlide.caption || ""} fill className="object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent z-10 flex items-center">
-                  <div className="container mx-auto px-8">
-                    <h1 className="text-3xl md:text-5xl font-bold text-white mb-3">{heroSlide.caption || ""}</h1>
-                    {heroSlide.link && (
-                      <Button size="lg" asChild>
-                        <Link href={heroSlide.link}>Explore</Link>
-                      </Button>
-                    )}
-                  </div>
-                </div>
-              </>
-            ) : (
-              <div className="w-full h-full bg-gradient-to-br from-blue-900 via-purple-800 to-red-700"></div>
-            )}
+          {/* Hero Section (Image Slider) */}
+          <div className="mb-12">
+            <ImageSlider 
+              slides={slides} 
+              autoSlide={true} 
+              slideInterval={5000} 
+            />
           </div>
 
           {/* Latest (from Realtime Database) */}

@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useState } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { MovieCard } from "@/components/movie-card"
 import { SeriesCard } from "@/components/series-card"
@@ -7,95 +8,70 @@ import { Footer } from "@/components/footer"
 import { Badge } from "@/components/ui/badge"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Calendar, Film, Tv, Star } from "lucide-react"
-
-const recentUpdates = [
-  {
-    id: "1",
-    title: "Ancient Warriors",
-    type: "movie",
-    year: 2024,
-    rating: 4.8,
-    genre: "Action",
-    poster: "/ancient-warriors-movie-poster.jpg",
-    duration: "2h 15m",
-    seasons: 0,
-    episodes: 0,
-    isNew: true,
-    addedDate: "2024-01-15",
-    description: "Epic tale of Luo warriors defending their homeland",
-  },
-  {
-    id: "2",
-    title: "Legends of the Lake - Season 2",
-    type: "series",
-    year: 2024,
-    rating: 4.6,
-    genre: "Drama",
-    poster: "/lake-legends-movie-poster.jpg",
-    duration: "",
-    seasons: 2,
-    episodes: 8,
-    isNew: true,
-    addedDate: "2024-01-10",
-    description: "New season exploring deeper mysteries of Lake Victoria",
-  },
-  {
-    id: "3",
-    title: "The Sacred Grove",
-    type: "movie",
-    year: 2024,
-    rating: 4.6,
-    genre: "Mystery",
-    poster: "/placeholder-otgwi.png",
-    duration: "2h 10m",
-    seasons: 0,
-    episodes: 0,
-    isNew: true,
-    addedDate: "2024-01-05",
-    description: "A mystical journey through ancient sacred grounds",
-  },
-  {
-    id: "4",
-    title: "The Fisherman's Legacy - New Episodes",
-    type: "series",
-    year: 2024,
-    rating: 4.4,
-    genre: "Adventure",
-    poster: "/placeholder-04jxh.png",
-    duration: "",
-    seasons: 1,
-    episodes: 10,
-    isNew: true,
-    addedDate: "2023-12-28",
-    description: "Follow the adventures of a legendary fisherman's descendants",
-  },
-]
-
-const upcomingReleases = [
-  {
-    title: "The Warrior Queen",
-    type: "movie",
-    genre: "Historical",
-    releaseDate: "2024-02-15",
-    description: "The story of a legendary Luo queen who united the tribes",
-  },
-  {
-    title: "River Tales - Season 1",
-    type: "series",
-    genre: "Drama",
-    releaseDate: "2024-03-01",
-    description: "Stories from communities along the great rivers",
-  },
-  {
-    title: "The Last Hunt",
-    type: "movie",
-    genre: "Adventure",
-    releaseDate: "2024-03-20",
-    description: "A father's final hunting expedition with his son",
-  },
-]
+import { movieService, seriesService, updatesService, type Movie, type Series, type UpdateItem } from "@/lib/firebase-services"
 
 export default function UpdatesPage() {
+  const [movies, setMovies] = useState<Movie[]>([])
+  const [series, setSeries] = useState<Series[]>([])
+  const [updates, setUpdates] = useState<UpdateItem[]>([])
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        setIsLoading(true)
+        const [moviesData, seriesData, updatesData] = await Promise.all([
+          movieService.getAllMovies(),
+          seriesService.getAllSeries(),
+          updatesService.getUpdates()
+        ])
+        
+        setMovies(moviesData)
+        setSeries(seriesData)
+        setUpdates(updatesData)
+      } catch (error) {
+        console.error('Error loading data:', error)
+      } finally {
+        setIsLoading(false)
+      }
+    }
+
+    loadData()
+  }, [])
+
+  // Combine movies and series for recent updates
+  const recentUpdates = [
+    ...movies.slice(0, 10).map(movie => ({
+      ...movie,
+      type: "movie" as const,
+      year: new Date(movie.createdAt || Date.now()).getFullYear(),
+      addedDate: new Date(movie.createdAt || Date.now()).toISOString().split('T')[0],
+      isNew: Boolean(movie.createdAt && Date.now() - (movie.createdAt as number) < 7 * 24 * 60 * 60 * 1000)
+    })),
+    ...series.slice(0, 5).map(series => ({
+      ...series,
+      type: "series" as const,
+      year: new Date(series.createdAt || Date.now()).getFullYear(),
+      addedDate: new Date(series.createdAt || Date.now()).toISOString().split('T')[0],
+      isNew: Boolean(series.createdAt && Date.now() - (series.createdAt as number) < 7 * 24 * 60 * 60 * 1000),
+      seasons: 1,
+      episodes: 8
+    }))
+  ].sort((a, b) => new Date(b.addedDate).getTime() - new Date(a.addedDate).getTime())
+
+  if (isLoading) {
+    return (
+      <div className="flex flex-col min-h-screen">
+        <SiteHeader />
+        <main className="flex-grow pt-12 md:pt-16">
+          <div className="container mx-auto px-4 py-8">
+            <div className="text-center">Loading updates...</div>
+          </div>
+        </main>
+        <Footer />
+      </div>
+    )
+  }
   return (
     <div className="flex flex-col min-h-screen">
       <SiteHeader />
@@ -202,45 +178,43 @@ export default function UpdatesPage() {
                     episodes={item.episodes}
                     isNew={item.isNew}
                   />
-                ),
+                )
               )}
             </div>
           </div>
 
           {/* Coming Soon */}
           <div>
-            <h2 className="text-2xl font-bold mb-6">Coming Soon</h2>
+            <h2 className="text-2xl font-bold mb-6">Latest Updates</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {upcomingReleases.map((item, index) => (
-                <Card key={index}>
-                  <CardHeader>
-                    <div className="flex items-center justify-between">
-                      <CardTitle className="text-lg">{item.title}</CardTitle>
-                      <Badge variant="secondary">
-                        {item.type === "movie" ? (
-                          <>
-                            <Film className="h-3 w-3 mr-1" /> Movie
-                          </>
-                        ) : (
-                          <>
-                            <Tv className="h-3 w-3 mr-1" /> Series
-                          </>
-                        )}
-                      </Badge>
-                    </div>
-                    <CardDescription>{item.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex items-center justify-between text-sm">
-                      <Badge variant="outline">{item.genre}</Badge>
-                      <div className="flex items-center text-muted-foreground">
-                        <Calendar className="h-4 w-4 mr-1" />
-                        {new Date(item.releaseDate).toLocaleDateString()}
+              {updates.length > 0 ? (
+                updates.map((item, index) => (
+                  <Card key={index}>
+                    <CardHeader>
+                      <div className="flex items-center justify-between">
+                        <CardTitle className="text-lg">{item.title}</CardTitle>
+                        <Badge variant="secondary">
+                          <Calendar className="h-3 w-3 mr-1" /> Update
+                        </Badge>
                       </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                      <CardDescription>{item.body}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="flex items-center justify-between text-sm">
+                        <Badge variant="outline">News</Badge>
+                        <div className="flex items-center text-muted-foreground">
+                          <Calendar className="h-4 w-4 mr-1" />
+                          {new Date(item.createdAt || Date.now()).toLocaleDateString()}
+                        </div>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))
+              ) : (
+                <div className="col-span-full text-center text-muted-foreground">
+                  No updates available yet
+                </div>
+              )}
             </div>
           </div>
         </div>

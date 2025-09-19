@@ -10,6 +10,7 @@ import Image from "next/image"
 import { formatDistanceToNow } from "date-fns"
 import { useAuth } from "@/hooks/use-auth"
 import { useRouter } from "next/navigation"
+import { movieService, seriesService, type Movie, type Series } from "@/lib/firebase-services"
 
 interface ContinueWatchingItem {
   id: string

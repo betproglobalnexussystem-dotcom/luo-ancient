@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { SiteHeader } from "@/components/site-header"
 import { MovieCard } from "@/components/movie-card"
 import { SeriesCard } from "@/components/series-card"
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { Search, Film, Tv } from "lucide-react"
+import { movieService, seriesService, type Movie, type Series } from "@/lib/firebase-services"
 
 const genreData = {
   Action: {
@@ -49,156 +50,25 @@ const genreData = {
       },
     ],
   },
-  Drama: {
-    description: "Emotional storytelling that explores the human condition",
-    movies: [
-      {
-        id: "m3",
-        title: "Hearts of the Village",
-        year: 2023,
-        rating: 4.5,
-        genre: "Drama",
-        poster: "/drama-movie-poster.png",
-        duration: "2h 5m",
-        isNew: false,
-      },
-    ],
-    series: [
-      {
-        id: "s2",
-        title: "Legends of the Lake",
-        year: 2024,
-        rating: 4.6,
-        genre: "Drama",
-        poster: "/lake-legends-movie-poster.jpg",
-        seasons: 2,
-        episodes: 16,
-        isNew: true,
-      },
-      {
-        id: "s3",
-        title: "The Village Chronicles",
-        year: 2023,
-        rating: 4.5,
-        genre: "Drama",
-        poster: "/village-drama-series.jpg",
-        seasons: 1,
-        episodes: 8,
-        isNew: false,
-      },
-    ],
+  Indian: {
+    description: "Indian movies and series collection",
+    movies: [],
+    series: [],
   },
-  Historical: {
-    description: "Stories from the rich heritage of ancient civilizations",
-    movies: [
-      {
-        id: "m4",
-        title: "Kings of Old",
-        year: 2022,
-        rating: 4.9,
-        genre: "Historical",
-        poster: "/historical-movie-poster.jpg",
-        duration: "2h 30m",
-        isNew: false,
-      },
-    ],
-    series: [
-      {
-        id: "s4",
-        title: "Tales of the Elders",
-        year: 2023,
-        rating: 4.8,
-        genre: "Historical",
-        poster: "/historical-series-poster.jpg",
-        seasons: 3,
-        episodes: 24,
-        isNew: false,
-      },
-    ],
+  War: {
+    description: "War-themed stories and battles",
+    movies: [],
+    series: [],
   },
-  Romance: {
-    description: "Love stories that transcend time and tradition",
-    movies: [
-      {
-        id: "m5",
-        title: "Love by the Lake",
-        year: 2024,
-        rating: 4.3,
-        genre: "Romance",
-        poster: "/romance-movie-poster.png",
-        duration: "1h 45m",
-        isNew: true,
-      },
-    ],
-    series: [
-      {
-        id: "s5",
-        title: "Eternal Hearts",
-        year: 2023,
-        rating: 4.4,
-        genre: "Romance",
-        poster: "/romance-series-poster.jpg",
-        seasons: 1,
-        episodes: 12,
-        isNew: false,
-      },
-    ],
+  Kungfu: {
+    description: "Kungfu and martial arts action",
+    movies: [],
+    series: [],
   },
-  Supernatural: {
-    description: "Mystical tales of spirits, magic, and otherworldly forces",
-    movies: [
-      {
-        id: "m6",
-        title: "Spirits of the Ancestors",
-        year: 2023,
-        rating: 4.7,
-        genre: "Supernatural",
-        poster: "/supernatural-movie-poster.jpg",
-        duration: "2h 10m",
-        isNew: false,
-      },
-    ],
-    series: [
-      {
-        id: "s6",
-        title: "Spirits of the Ancestors",
-        year: 2022,
-        rating: 4.7,
-        genre: "Supernatural",
-        poster: "/supernatural-series-poster.jpg",
-        seasons: 2,
-        episodes: 20,
-        isNew: false,
-      },
-    ],
-  },
-  Comedy: {
-    description: "Light-hearted entertainment that brings joy and laughter",
-    movies: [
-      {
-        id: "m7",
-        title: "The Village Joker",
-        year: 2024,
-        rating: 4.2,
-        genre: "Comedy",
-        poster: "/comedy-movie-poster.png",
-        duration: "1h 35m",
-        isNew: true,
-      },
-    ],
-    series: [
-      {
-        id: "s7",
-        title: "Funny Tales",
-        year: 2024,
-        rating: 4.1,
-        genre: "Comedy",
-        poster: "/comedy-series-poster.png",
-        seasons: 1,
-        episodes: 10,
-        isNew: true,
-      },
-    ],
+  Nigeria: {
+    description: "Nigerian Nollywood picks",
+    movies: [],
+    series: [],
   },
 }
 

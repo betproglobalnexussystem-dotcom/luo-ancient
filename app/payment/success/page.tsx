@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useState, Suspense } from "react"
 import { useSearchParams, useRouter } from "next/navigation"
 import { SiteLogo } from "@/components/site-logo"
 import { Footer } from "@/components/footer"
@@ -9,7 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { CheckCircle, Loader2 } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 
-export default function PaymentSuccessPage() {
+function PaymentSuccessContent() {
   const searchParams = useSearchParams()
   const router = useRouter()
   const { toast } = useToast()
@@ -143,6 +143,32 @@ export default function PaymentSuccessPage() {
     </div>
   )
 }
+
+export default function PaymentSuccessPage() {
+  return (
+    <Suspense fallback={
+      <div className="flex flex-col min-h-screen">
+        <div className="flex-grow flex items-center justify-center px-4 py-8">
+          <div className="container max-w-md mx-auto">
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-8">
+                <Loader2 className="h-12 w-12 animate-spin text-primary mb-4" />
+                <h2 className="text-xl font-semibold mb-2">Loading...</h2>
+                <p className="text-muted-foreground text-center">
+                  Please wait...
+                </p>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+        <Footer />
+      </div>
+    }>
+      <PaymentSuccessContent />
+    </Suspense>
+  )
+}
+
 
 
 

@@ -14,7 +14,9 @@ import { ArrowLeft, Lock, Eye, EyeOff, CheckCircle } from "lucide-react"
 import { useToast } from "@/hooks/use-toast"
 import { useAuth } from "@/hooks/use-auth"
 
-export default function ResetPasswordPage() {
+import { Suspense } from "react"
+
+function ResetPasswordPageInner() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const { toast } = useToast()
@@ -194,5 +196,13 @@ export default function ResetPasswordPage() {
       </div>
       <Footer />
     </div>
+  )
+}
+
+export default function ResetPasswordPage() {
+  return (
+    <Suspense>
+      <ResetPasswordPageInner />
+    </Suspense>
   )
 }

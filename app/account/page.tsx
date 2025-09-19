@@ -1,6 +1,6 @@
-"use client"
 
-import type React from "react"
+"use client"
+import React from "react"
 
 import { useState, useRef } from "react"
 import { SiteHeader } from "@/components/site-header"
@@ -38,8 +38,13 @@ export default function AccountPage() {
   const [city, setCity] = useState("")
   const [country, setCountry] = useState("Uganda")
 
+  // Only redirect on client
+  React.useEffect(() => {
+    if (!user) {
+      router.push("/login")
+    }
+  }, [user, router])
   if (!user) {
-    router.push("/login")
     return null
   }
 
@@ -98,7 +103,10 @@ export default function AccountPage() {
 
   const handleLogout = () => {
     logout()
-    router.push("/")
+    // Use client-side navigation
+    setTimeout(() => {
+      router.push("/")
+    }, 0)
   }
 
   return (

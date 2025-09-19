@@ -154,6 +154,46 @@ export function PaymentMethods({
     }
   }
 
+  const handlePesapalPayment = async () => {
+    setIsLoading(true)
+    const reference = generateReference()
+
+    try {
+      const response = await fetch('/api/payments/pesapal', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          amount: amount,
+          currency: selectedCurrency,
+          description: description,
+          reference: reference,
+          callbackUrl: `${process.env.NEXT_PUBLIC_BASE_URL || 'http://localhost:3000'}/payment/success`
+        })
+      })
+
+      const result = await response.json()
+
+      if (result.success) {
+        // Pesapal returns redirect_url or payment URL within data
+        const redirectUrl = result.data.redirect_url || result.data.redirecturl || result.data.payment_url
+        if (redirectUrl) {
+          window.location.href = redirectUrl
+          return
+        }
+        onPaymentError?.('Missing redirect URL from Pesapal')
+      } else {
+        toast({ title: 'PesaPal payment failed', description: result.message || 'Failed to create order', variant: 'destructive' })
+        onPaymentError?.(result.message)
+      }
+    } catch (error) {
+      console.error('Pesapal payment error:', error)
+      toast({ title: 'Payment error', description: 'Failed to process PesaPal payment. Please try again.', variant: 'destructive' })
+      onPaymentError?.('Network error')
+    } finally {
+      setIsLoading(false)
+    }
+  }
+
   const pollPaymentStatus = async (reference: string, type: string) => {
     const maxAttempts = 30 // 5 minutes with 10-second intervals
     let attempts = 0
@@ -216,7 +256,7 @@ export function PaymentMethods({
       </CardHeader>
       <CardContent>
         <Tabs value={selectedMethod} onValueChange={setSelectedMethod} className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="mobile" className="flex items-center gap-2">
               <Smartphone className="h-4 w-4" />
               Mobile Money
@@ -224,6 +264,10 @@ export function PaymentMethods({
             <TabsTrigger value="paypal" className="flex items-center gap-2">
               <CreditCard className="h-4 w-4" />
               PayPal
+            </TabsTrigger>
+            <TabsTrigger value="pesapal" className="flex items-center gap-2">
+              <CreditCard className="h-4 w-4" />
+              PesaPal
             </TabsTrigger>
           </TabsList>
 
@@ -323,11 +367,35 @@ export function PaymentMethods({
               )}
             </Button>
           </TabsContent>
+
+          <TabsContent value="pesapal" className="space-y-4">
+            <div className="space-y-2">
+              <p className="text-sm text-muted-foreground">You will be redirected to PesaPal to complete payment.</p>
+            </div>
+            <Button 
+              onClick={handlePesapalPayment} 
+              disabled={isLoading}
+              className="w-full"
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Processing...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="mr-2 h-4 w-4" />
+                  Pay with PesaPal
+                </>
+              )}
+            </Button>
+          </TabsContent>
         </Tabs>
       </CardContent>
     </Card>
   )
 }
+
 
 
 

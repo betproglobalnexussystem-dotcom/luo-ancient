@@ -5,6 +5,7 @@ import "./globals.css"
 import { ThemeProvider } from "@/components/theme-provider"
 import { AuthProvider } from "@/hooks/use-auth"
 import { WishlistProvider } from "@/hooks/use-wishlist"
+import { CartProvider } from "@/hooks/use-cart"
 import { Toaster } from "@/components/ui/toaster"
 import { SearchShortcut } from "@/components/search-shortcut"
 
@@ -27,9 +28,11 @@ export default function RootLayout({
         <ThemeProvider attribute="class" defaultTheme="light" enableSystem disableTransitionOnChange>
           <AuthProvider>
             <WishlistProvider>
-              <SearchShortcut />
-              <div className="animated-gradient min-h-screen">{children}</div>
-              <Toaster />
+              <CartProvider>
+                <SearchShortcut />
+                <div className="animated-gradient min-h-screen">{children}</div>
+                <Toaster />
+              </CartProvider>
             </WishlistProvider>
           </AuthProvider>
         </ThemeProvider>

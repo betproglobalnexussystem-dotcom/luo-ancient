@@ -1,12 +1,13 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import { useParams } from "next/navigation"
+import { useParams, useRouter } from "next/navigation"
 import { SiteHeader } from "@/components/site-header"
 import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 import { VideoPlayer } from "@/components/video-player"
+import { useAuth } from "@/hooks/use-auth"
 import { movieService } from "@/lib/firebase-services"
 import { Play, Heart, Share2, Star, Clock, Calendar } from "lucide-react"
 import Image from "next/image"
@@ -31,10 +32,12 @@ interface Movie {
 
 export default function MoviePage() {
   const params = useParams()
+  const router = useRouter()
   const [movie, setMovie] = useState<Movie | null>(null)
   const [isPlaying, setIsPlaying] = useState(false)
   const [isInWishlist, setIsInWishlist] = useState(false)
   const [loading, setLoading] = useState(true)
+  const { user } = useAuth()
 
   useEffect(() => {
     let active = true
@@ -75,9 +78,7 @@ export default function MoviePage() {
   }, [params.id])
 
   const handlePlay = () => {
-    setIsPlaying(true)
-
-    // Add to watch history
+    // Record watch history (optional quick add)
     const watchHistory = JSON.parse(localStorage.getItem("watchHistory") || "[]")
     const newEntry = {
       id: Date.now().toString(),
@@ -86,10 +87,12 @@ export default function MoviePage() {
       moviePoster: movie?.poster,
       watchedAt: new Date().toISOString(),
       progress: 0,
-      duration: 8100, // 2h 15m in seconds
+      duration: 8100,
     }
     watchHistory.unshift(newEntry)
     localStorage.setItem("watchHistory", JSON.stringify(watchHistory.slice(0, 50)))
+
+    router.push(`/play/${params.id}`)
   }
 
   const toggleWishlist = () => {
@@ -134,18 +137,7 @@ export default function MoviePage() {
     )
   }
 
-  if (isPlaying) {
-    return (
-      <div className="flex flex-col min-h-screen bg-black">
-        <VideoPlayer
-          src={movie.fullMovie}
-          poster={movie.poster}
-          title={movie.title}
-          onClose={() => setIsPlaying(false)}
-        />
-      </div>
-    )
-  }
+  // Legacy inline player removed in favor of dedicated /play/[id] page
 
   return (
     <div className="flex flex-col min-h-screen">
